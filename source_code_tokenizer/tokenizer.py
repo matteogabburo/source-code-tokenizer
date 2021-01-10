@@ -38,16 +38,19 @@ class PythonTokenizer(CodeTokenizer):
 
     def tokenize(self, text):
 
-        # identation and deidentation
-        identation_size = None
+        identation_size = 4 # according with PEP8
         indent_tab = False
         indent_spaces = False
         last_indent_size = 0
         tokenized = []
+
         for tok in self.TOKENIZED.finditer(text):
 
             v, k = (tok.group(), tok.lastgroup)
 
+            # identation and deidentation
+            """
+            # dynamic tabulation size
             if k == "INDENT" and identation_size is None:
 
                 if v[0] == '\t':
@@ -58,9 +61,11 @@ class PythonTokenizer(CodeTokenizer):
                     indent_spaces = True
                 else:
                     raise ValueError("Identation error. Value not recognized (must be a space or \\t).")
+            """
 
             if k == "INDENT" :
                 
+                """
                 if v[0] == ' ' and indent_spaces:
                     pass
                 elif v[0] == '\t' and indent_tab:
@@ -70,7 +75,7 @@ class PythonTokenizer(CodeTokenizer):
 
                 if len(v) % identation_size > 0:
                     raise Exception("Identation error: the tabulation is inconsistent")
-
+                
                 # decide if it is an indentation or a deindentation
                 if len(v) >= last_indent_size:
                     k = "INDENT"
@@ -81,6 +86,16 @@ class PythonTokenizer(CodeTokenizer):
                 # add all but one tabs (it will be add at the end of the cycle)
                 for _ in range(int(len(v) / identation_size)-1):
                     tokenized.append((v[0] * identation_size, k))
+                """
+                # decide if it is an indentation or a deindentation
+                if len(v) >= last_indent_size:
+                    k = "INDENT"
+                else:
+                    k = "DEINDENT"
+                last_indent_size = len(v)
+
+                tokenized.append((v, k))
+
 
             # replace NEWLINE with \n
             if k == "NEWLINE" or k == "NL":
