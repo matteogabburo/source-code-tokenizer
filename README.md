@@ -6,7 +6,7 @@
 #### pip + git
 
 ```
-pip install git+https://github.com/matteogabburo/sourcecode-tokenizer.git
+pip install git+https://github.com/matteogabburo/source-code-tokenizer.git
 ```
 
 
