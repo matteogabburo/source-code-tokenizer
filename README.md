@@ -1,5 +1,8 @@
 # source-code-tokenizer
 
+### Important:
+
+This repository code is still an incomplete version of the final package; it can contain some bugs.
 
 ### Installation:
 
