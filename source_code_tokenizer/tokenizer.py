@@ -11,13 +11,16 @@ from source_code_tokenizer.languages.js.regex import JSRegex
 
 class CodeTokenizer:
     def __init__(self):
+        self.TOKENIZED_STR = None
         self.TOKENIZED = None
         self.setup_regex()
 
-    @abc.abstractmethod
     def get_groups(self):
         r"""Return the list of groups tokenized by the tokenizer."""
         return sorted([k for k, v in self.TOKENIZED.groupindex.items()])
+
+    def get_regex(self):
+        return self.TOKENIZED_STR
 
     @abc.abstractmethod
     def setup_regex(self):
@@ -31,12 +34,18 @@ class CodeTokenizer:
     def tokenize(self, text):
         """This method must take a string and return a list of tuples (value, type)"""
 
+    @abc.abstractmethod
+    def get_line_terminators(self, text):
+        """This method return the list of line terminators of the language"""
+
+
 
 class PythonTokenizer(CodeTokenizer):
     def setup_regex(self):
 
         # each regex should be a group
-        self.TOKENIZED = re.compile(PyRegex().get_full_regex(), re.MULTILINE)
+        self.TOKENIZED_STR = PyRegex().get_full_regex()
+        self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
 
     def tokenize(self, text):
 
@@ -106,6 +115,9 @@ class PythonTokenizer(CodeTokenizer):
 
         return tokenized
 
+    def get_line_terminators(self):
+        return ['\n']
+
 
 class CTokenizer(CodeTokenizer):
     def __init__(self):
@@ -118,7 +130,8 @@ class CTokenizer(CodeTokenizer):
     def setup_regex(self):
 
         # each regex should be a group
-        self.TOKENIZED = re.compile(CRegex().get_full_regex(), re.MULTILINE)
+        self.TOKENIZED_STR = CRegex().get_full_regex()
+        self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
 
     def tokenize(self, text):
 
@@ -143,7 +156,8 @@ class CPPTokenizer(CodeTokenizer):
     def setup_regex(self):
 
         # each regex should be a group
-        self.TOKENIZED = re.compile(CPPRegex().get_full_regex(), re.MULTILINE)
+        self.TOKENIZED_STR = CPPRegex().get_full_regex()
+        self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
 
     def tokenize(self, text):
 
@@ -168,7 +182,8 @@ class JavaTokenizer(CodeTokenizer):
     def setup_regex(self):
 
         # each regex should be a group
-        self.TOKENIZED = re.compile(JavaRegex().get_full_regex(), re.MULTILINE)
+        self.TOKENIZED_STR = JavaRegex().get_full_regex()
+        self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
 
     def tokenize(self, text):
 
@@ -193,7 +208,8 @@ class JSTokenizer(CodeTokenizer):
     def setup_regex(self):
 
         # each regex should be a group
-        self.TOKENIZED = re.compile(JSRegex().get_full_regex(), re.MULTILINE)
+        self.TOKENIZED_STR = JSRegex().get_full_regex()
+        self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
 
     def tokenize(self, text):
 

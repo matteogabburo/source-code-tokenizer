@@ -43,7 +43,7 @@ NL = r"(?P<NL>^[ |\t]*\n)"
 
 # Language keywords
 _REGEX_KEYWORD = "|".join([r"{}(?!\w)".format(kw) for kw in LIST_KEYWORDS])
-KEYWORD = "(?P<PYKW>" + _REGEX_KEYWORD + ")"
+KEYWORD = "(?P<KW>" + _REGEX_KEYWORD + ")"
 
 # numbers
 _NUMBER_STD = r"[\d]+[\.]?[\d]*"
@@ -72,12 +72,12 @@ COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
 _STRING_PREFIX = r"(b|r|u|f|br|fr)?"
-_STRING_MULTILINE_T1 = _STRING_PREFIX + r'"{3}(\n|[^"]|.\n)*"{3}'
-_STRING_MULTILINE_T2 = _STRING_PREFIX + r"'{3}(\n|[^']|.\n)*'{3}"
+_STRING_MULTILINE_T1 = _STRING_PREFIX + r'"{3}([^"]|\\"|""(?!")|"(?!"))*"{3}'
+_STRING_MULTILINE_T2 = _STRING_PREFIX + r"'{3}([^']|\\'|''(?!')|'(?!'))*'{3}"
 _REGEX_STRING_MULTILINE = _STRING_MULTILINE_T1 + "|" + _STRING_MULTILINE_T2
 _STRING_MULTILINE = r"(?P<STRING_M>" + _REGEX_STRING_MULTILINE + ")"
-_STRING_T1 = _STRING_PREFIX + r'"(\\\n|\\"|[^"]|.\n])*"'
-_STRING_T2 = _STRING_PREFIX + r"'(\\\n|\\'|[^']|.\n])*'"
+_STRING_T1 = _STRING_PREFIX + r'"(\\\n|\\"|\\|[^"]|.\n])*"'
+_STRING_T2 = _STRING_PREFIX + r"'(\\\n|\\'|\\|[^']|.\n])*'"
 _REGEX_STRING = _STRING_T1 + "|" + _STRING_T2
 _STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 STRING = _STRING_MULTILINE + "|" + _STRING
