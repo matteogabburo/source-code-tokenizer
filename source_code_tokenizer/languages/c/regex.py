@@ -66,7 +66,7 @@ RM_MULTIPLE_SPACES = r"[^\n\S]+"
 
 # Language keywords
 _REGEX_KEYWORD = "|".join([r"{}(?!\w)".format(kw) for kw in LIST_KEYWORDS])
-KEYWORD = "(?P<CKW>" + _REGEX_KEYWORD + ")"
+KEYWORD = "(?P<KW>" + _REGEX_KEYWORD + ")"
 
 # variable names
 _REGEX_NAME = r"[^\d\W]\w*"
