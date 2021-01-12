@@ -102,7 +102,7 @@ COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
 _STRING_MULTILINE = r'"{3}(\n|[^"]|.\n)*"{3}'
-_STRING = r'"(\\\n|\\"|[^"]|.\n])*"'
+_STRING = r'"(\\\n|\\"|\\\\|[^"]|.\n])*"'
 _REGEX_STRING = _STRING_MULTILINE + "|" + _STRING
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 

@@ -86,9 +86,9 @@ _REGEX_COMMENT = _COMMENT + "|" + _COMMENT_MULTILINE
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
-_REGEX_STRING1 = r'"(\\\n|\\"|[^"]|.\n])*"'
-_REGEX_STRING2 = r"'(\\\n|\\'|[^']|.\n])*'"
-_REGEX_STRING3 = r"`(\\\n|\\`|[^`]|.\n])*`"
+_REGEX_STRING1 = r'"(\\\n|\\\\|\\"|[^"]|.\n])*"'
+_REGEX_STRING2 = r"'(\\\n|\\\\|\\'|[^']|.\n])*'"
+_REGEX_STRING3 = r"`(\\\n|\\\\|\\`|[^`]|.\n])*`"
 _REGEX_STRING = _REGEX_STRING1 + "|" + _REGEX_STRING2 + "|" + _REGEX_STRING3
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 

@@ -144,6 +144,8 @@ class CTokenizer(CodeTokenizer):
 
         return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
 
+    def get_line_terminators(self):
+        return [';']
 
 class CPPTokenizer(CodeTokenizer):
     def __init__(self):
@@ -169,6 +171,9 @@ class CPPTokenizer(CodeTokenizer):
         text = self.RM_SPACES.sub(" ", text).strip()
 
         return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+
+    def get_line_terminators(self):
+        return [';']
 
 
 class JavaTokenizer(CodeTokenizer):
@@ -196,6 +201,8 @@ class JavaTokenizer(CodeTokenizer):
 
         return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
 
+    def get_line_terminators(self):
+        return [';']
 
 class JSTokenizer(CodeTokenizer):
     def __init__(self):
@@ -221,3 +228,6 @@ class JSTokenizer(CodeTokenizer):
         text = self.RM_SPACES.sub(" ", text).strip()
 
         return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+
+    def get_line_terminators(self):
+        return [';']

@@ -98,7 +98,7 @@ _REGEX_COMMENT = _COMMENT + "|" + _COMMENT_MULTILINE
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
-_REGEX_STRING = r'"(\\\n|\\"|[^"]|.\n])*"'
+_REGEX_STRING = r'"(\\\n|\\"|\\\\|[^"]|.\n])*"'
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 
 # char regex

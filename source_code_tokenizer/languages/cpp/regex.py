@@ -157,7 +157,7 @@ COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
 _STRING_PREFIX = r"(L|u8|u|U|R)?"
-_REGEX_STRING = _STRING_PREFIX + r'"(\\\n|\\"|[^"]|.\n])*"'
+_REGEX_STRING = _STRING_PREFIX + r'"(\\\n|\\"|\\\\|[^"]|.\n])*"'
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 
 # char regex
