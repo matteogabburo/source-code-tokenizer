@@ -71,13 +71,14 @@ _REGEX_COMMENT = r"#[^\n]*"
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
+_STRING_CB = r"(?P<ERROR_{}>\Z)" # catastrofic backtracking if a string is not closed
 _STRING_PREFIX = r"(b|r|u|f|br|fr)?"
-_STRING_MULTILINE_T1 = _STRING_PREFIX + r'"{3}([^"]|\\"|""(?!")|"(?!"))*"{3}'
-_STRING_MULTILINE_T2 = _STRING_PREFIX + r"'{3}([^']|\\'|''(?!')|'(?!'))*'{3}"
+_STRING_MULTILINE_T1 = _STRING_PREFIX + r'"{3}([^"]|\\"|""(?!")|"(?!"))*("{3}|'+ _STRING_CB.format("MT1") +')'
+_STRING_MULTILINE_T2 = _STRING_PREFIX + r"'{3}([^']|\\'|''(?!')|'(?!'))*('{3}|"+ _STRING_CB.format("MT2") +")"
 _REGEX_STRING_MULTILINE = _STRING_MULTILINE_T1 + "|" + _STRING_MULTILINE_T2
 _STRING_MULTILINE = r"(?P<STRING_M>" + _REGEX_STRING_MULTILINE + ")"
-_STRING_T1 = _STRING_PREFIX + r'"(\\\n|\\"|\\\\|\\|[^"]|.\n])*"'
-_STRING_T2 = _STRING_PREFIX + r"'(\\\n|\\'|\\\\|\\|[^']|.\n])*'"
+_STRING_T1 = _STRING_PREFIX + r'"(\\\n|\\"|\\\\|\\|[^"]|.\n])*("|'+ _STRING_CB.format("T1") +')'
+_STRING_T2 = _STRING_PREFIX + r"'(\\\n|\\'|\\\\|\\|[^']|.\n])*('|"+ _STRING_CB.format("T2") +")"
 _REGEX_STRING = _STRING_T1 + "|" + _STRING_T2
 _STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 STRING = _STRING_MULTILINE + "|" + _STRING

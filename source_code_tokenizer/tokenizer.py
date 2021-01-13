@@ -49,12 +49,10 @@ class PythonTokenizer(CodeTokenizer):
 
     def tokenize(self, text):
 
-        identation_size = 4  # according with PEP8
-        indent_tab = False
-        indent_spaces = False
         last_indent_size = 0
         tokenized = []
 
+        error = False
         for tok in self.TOKENIZED.finditer(text):
 
             v, k = (tok.group(), tok.lastgroup)
@@ -110,6 +108,20 @@ class PythonTokenizer(CodeTokenizer):
             # replace NEWLINE with \n
             if k == "NEWLINE" or k == "NL":
                 v = "\n"
+
+            # check strings errors
+            if k == "STRING":
+                # string must be longher than 1 and bos and eos must be in [",'] and equal
+                if not(len(v) > 1 and v[0] == v[-1] and v[0] in ['"', "'"]):
+                    error = True
+
+            if k == "STRING_M":
+                # string must be longher than 5 and bos and eos must be in [""",'''] and equal
+                if not (len(v) > 5 and v[:3] == v[-3] and v[:3] in ['"""', "'''"]):
+                    error = True
+
+            if error:
+                raise Exception("Error on string delimiters occurred while tokenizing")
 
             tokenized.append((v, k))
 
