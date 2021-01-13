@@ -81,22 +81,20 @@ NUMBER = r"(?P<NUMBER>" + _REGEX_NUMBER + ")"
 
 # comments regex
 _COMMENT = r"//[^\n]*"
-_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?\*/"
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?(\*/|" + _STRING_CB.format("COMM_M") + ")"
 _REGEX_COMMENT = _COMMENT + "|" + _COMMENT_MULTILINE
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
-_REGEX_STRING1 = r'"(\\\n|\\\\|\\"|[^"]|.\n])*"'
-_REGEX_STRING2 = r"'(\\\n|\\\\|\\'|[^']|.\n])*'"
-_REGEX_STRING3 = r"`(\\\n|\\\\|\\`|[^`]|.\n])*`"
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_REGEX_STRING1 = r'"(\\\n|\\"|\\\\|[^"]|.\n])*("|' + _STRING_CB.format("STR1") + ")"
+_REGEX_STRING2 = r"'(\\\n|\\'|\\\\|[^']|.\n])*('|" + _STRING_CB.format("STR2") + ")"
+_REGEX_STRING3 = r"`(\\\n|\\`|\\\\|[^`]|.\n])*(`|" + _STRING_CB.format("STR3") + ")"
 _REGEX_STRING = _REGEX_STRING1 + "|" + _REGEX_STRING2 + "|" + _REGEX_STRING3
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 
-# char regex
-_REGEX_CHAR = r"'(\\(\\|'|\"|\?|a|b|f|n|r|t|v|[0-9]{1,3}|x[a-fA-F0-9]+)|\w)'"
-CHAR = r"(?P<CHAR>" + _REGEX_CHAR + ")"
-
-FULL_JSREGEX = "|".join([COMMENT, STRING, CHAR, KEYWORD, NUMBER, OP, NAME])
+FULL_JSREGEX = "|".join([COMMENT, STRING, KEYWORD, NUMBER, OP, NAME])
 
 
 class JSRegex:

@@ -13,7 +13,6 @@ class CodeTokenizer:
     def __init__(self):
         self.TOKENIZED_STR = None
         self.TOKENIZED = None
-        self.str_headers = None
         self.setup_regex()
 
     def get_groups(self):
@@ -40,22 +39,22 @@ class CodeTokenizer:
         """This method return the list of line terminators of the language"""
 
 
-
 class PythonTokenizer(CodeTokenizer):
-    
+    def __init__(self):
+        super().__init__()
+        self.str_headers = PyRegex().get_str_headers()
+
     def setup_regex(self):
 
         # each regex should be a group
         self.TOKENIZED_STR = PyRegex().get_full_regex()
         self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
-        self.str_headers = PyRegex().get_str_headers()
 
     def tokenize(self, text):
 
         last_indent_size = 0
         tokenized = []
 
-        error = False
         for tok in self.TOKENIZED.finditer(text):
 
             v, k = (tok.group(), tok.lastgroup)
@@ -115,29 +114,38 @@ class PythonTokenizer(CodeTokenizer):
             # check strings errors
             def check_strings(s):
 
-                to_remove = max([len(h) if s.startswith(h) else 0 for h in self.str_headers])
-                v = s[to_remove:]
-
                 if k == "STRING":
                     # string must be longher than 1 and bos and eos must be in [",'] and equal
                     # WARNING: a string can also start with (b|r|u|f|br|fr)
-                    if not(len(v) > 1 and v[0] == v[-1] and v[0] in ['"', "'"]):
-                        raise Exception("Error on string delimiters occurred while tokenizing STRING")
+                    to_remove = max(
+                        [len(h) if s.startswith(h) else 0 for h in self.str_headers]
+                    )
+                    v = s[to_remove:]
+                    if not (len(v) > 1 and v[0] == v[-1] and v[0] in ['"', "'"]):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING"
+                        )
 
                 if k == "STRING_M":
                     # string must be longher than 5 and bos and eos must be in [""",'''] and equal
                     # WARNING: a string can also start with (b|r|u|f|br|fr)
+                    to_remove = max(
+                        [len(h) if s.startswith(h) else 0 for h in self.str_headers]
+                    )
+                    v = s[to_remove:]
                     if not (len(v) > 5 and v[:3] == v[-3:] and v[:3] in ['"""', "'''"]):
-                        raise Exception("Error on string delimiters occurred while tokenizing STRING_M")                    
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING_M"
+                        )
 
             check_strings(v)
-            
+
             tokenized.append((v, k))
 
         return tokenized
 
     def get_line_terminators(self):
-        return ['\n']
+        return ["\n"]
 
 
 class CTokenizer(CodeTokenizer):
@@ -147,6 +155,9 @@ class CTokenizer(CodeTokenizer):
             CRegex().get_clean_indent_regex(), re.MULTILINE
         )
         self.RM_SPACES = re.compile(CRegex().get_remove_doublespaces_regex())
+
+        self.str_headers = CRegex().get_str_headers()
+        self.chr_headers = CRegex().get_chr_headers()
 
     def setup_regex(self):
 
@@ -163,10 +174,51 @@ class CTokenizer(CodeTokenizer):
         text = self.RM_INDENTATION.sub(remove_spaces, text)
         text = self.RM_SPACES.sub(" ", text).strip()
 
-        return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+        tokenized = []
+
+        for tok in self.TOKENIZED.finditer(text):
+
+            v, k = (tok.group(), tok.lastgroup)
+
+            # check string and comment errors
+            def check(s):
+
+                if k == "STRING":
+                    # string must be longer than 1 and bos and eos must be equal to "
+                    # WARNING: a string can also start with some prefix
+                    to_remove = max(
+                        [len(h) if s.startswith(h) else 0 for h in self.str_headers]
+                    )
+                    v = s[to_remove:]
+                    if not (len(v) > 1 and v[0] == v[-1] and v[0] == '"'):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING"
+                        )
+
+                if k == "CHAR":
+                    # char must be longer than 1 and bos and eos must be equal to '
+                    if not (len(s) > 1 and s[0] == s[-1] and s[0] == "'"):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing CHAR"
+                        )
+
+                if k == "COMMENT":
+                    # if comment starts with "/*" len should be higher than 3 and it must finish with "*/"
+                    if len(s) > 1 and s.startswith("/*"):
+                        if not (len(s) > 3 and s[-2:] == "*/"):
+                            raise Exception(
+                                "Error on string delimiters occurred while tokenizing COMMENT"
+                            )
+
+            check(v)
+
+            tokenized.append((v, k))
+
+        return tokenized
 
     def get_line_terminators(self):
-        return [';']
+        return [";"]
+
 
 class CPPTokenizer(CodeTokenizer):
     def __init__(self):
@@ -175,6 +227,9 @@ class CPPTokenizer(CodeTokenizer):
             CPPRegex().get_clean_indent_regex(), re.MULTILINE
         )
         self.RM_SPACES = re.compile(CPPRegex().get_remove_doublespaces_regex())
+
+        self.str_headers = CPPRegex().get_str_headers()
+        self.chr_headers = CPPRegex().get_chr_headers()
 
     def setup_regex(self):
 
@@ -191,10 +246,55 @@ class CPPTokenizer(CodeTokenizer):
         text = self.RM_INDENTATION.sub(remove_spaces, text)
         text = self.RM_SPACES.sub(" ", text).strip()
 
-        return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+        tokenized = []
+
+        for tok in self.TOKENIZED.finditer(text):
+
+            v, k = (tok.group(), tok.lastgroup)
+
+            # check string and comment errors
+            def check(s):
+
+                if k == "STRING":
+                    # string must be longer than 1 and bos and eos must be equal to "
+                    # WARNING: a string can also start with some prefix
+                    to_remove = max(
+                        [len(h) if s.startswith(h) else 0 for h in self.str_headers]
+                    )
+                    v = s[to_remove:]
+                    if not (len(v) > 1 and v[0] == v[-1] and v[0] == '"'):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING"
+                        )
+
+                if k == "CHAR":
+                    # char must be longer than 1 and bos and eos must be equal to '
+                    # WARNING: a char can also start with some prefix
+                    to_remove = max(
+                        [len(h) if s.startswith(h) else 0 for h in self.chr_headers]
+                    )
+                    v = s[to_remove:]
+                    if not (len(v) > 1 and v[0] == v[-1] and v[0] == "'"):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing CHAR"
+                        )
+
+                if k == "COMMENT":
+                    # if comment starts with "/*" len should be higher than 3 and it must finish with "*/"
+                    if len(s) > 1 and s.startswith("/*"):
+                        if not (len(s) > 3 and s[-2:] == "*/"):
+                            raise Exception(
+                                "Error on string delimiters occurred while tokenizing COMMENT"
+                            )
+
+            check(v)
+
+            tokenized.append((v, k))
+
+        return tokenized
 
     def get_line_terminators(self):
-        return [';']
+        return [";"]
 
 
 class JavaTokenizer(CodeTokenizer):
@@ -220,10 +320,46 @@ class JavaTokenizer(CodeTokenizer):
         text = self.RM_INDENTATION.sub(remove_spaces, text)
         text = self.RM_SPACES.sub(" ", text).strip()
 
-        return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+        tokenized = []
+
+        for tok in self.TOKENIZED.finditer(text):
+
+            v, k = (tok.group(), tok.lastgroup)
+
+            # check string and comment errors
+            def check(s):
+
+                if k == "STRING":
+                    # string must be longer than 1 and bos and eos must be equal to "
+                    if not (len(s) > 1 and s[0] == s[-1] and s[0] == '"'):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING"
+                        )
+
+                if k == "CHAR":
+                    # char must be longer than 1 and bos and eos must be equal to '
+                    if not (len(s) > 1 and s[0] == s[-1] and s[0] == "'"):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing CHAR"
+                        )
+
+                if k == "COMMENT":
+                    # if comment starts with "/*" len should be higher than 3 and it must finish with "*/"
+                    if len(s) > 1 and s.startswith("/*"):
+                        if not (len(s) > 3 and s[-2:] == "*/"):
+                            raise Exception(
+                                "Error on string delimiters occurred while tokenizing COMMENT"
+                            )
+
+            check(v)
+
+            tokenized.append((v, k))
+
+        return tokenized
 
     def get_line_terminators(self):
-        return [';']
+        return [";"]
+
 
 class JSTokenizer(CodeTokenizer):
     def __init__(self):
@@ -248,7 +384,35 @@ class JSTokenizer(CodeTokenizer):
         text = self.RM_INDENTATION.sub(remove_spaces, text)
         text = self.RM_SPACES.sub(" ", text).strip()
 
-        return [(tok.group(), tok.lastgroup) for tok in self.TOKENIZED.finditer(text)]
+        tokenized = []
+
+        for tok in self.TOKENIZED.finditer(text):
+
+            v, k = (tok.group(), tok.lastgroup)
+
+            # check string and comment errors
+            def check(s):
+
+                if k == "STRING":
+                    # string must be longer than 1 and bos and eos must be in [", ', `]
+                    if not (len(s) > 1 and s[0] == s[-1] and s[0] in ['"', "'", "`"]):
+                        raise Exception(
+                            "Error on string delimiters occurred while tokenizing STRING"
+                        )
+
+                if k == "COMMENT":
+                    # if comment starts with "/*" len should be higher than 3 and it must finish with "*/"
+                    if len(s) > 1 and s.startswith("/*"):
+                        if not (len(s) > 3 and s[-2:] == "*/"):
+                            raise Exception(
+                                "Error on string delimiters occurred while tokenizing COMMENT"
+                            )
+
+            check(v)
+
+            tokenized.append((v, k))
+
+        return tokenized
 
     def get_line_terminators(self):
-        return [';']
+        return [";"]

@@ -96,26 +96,36 @@ NUMBER = r"(?P<NUMBER>" + _REGEX_NUMBER + ")"
 
 # comments regex
 _COMMENT = r"//[^\n]*"
-_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?\*/"
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?(\*/|" + _STRING_CB.format("COMM_M") + ")"
 _REGEX_COMMENT = _COMMENT + "|" + _COMMENT_MULTILINE
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
-_STRING_MULTILINE = r'"{3}(\n|[^"]|.\n)*"{3}'
-_STRING = r'"(\\\n|\\"|\\\\|[^"]|.\n])*"'
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_STRING_MULTILINE = (
+    r'"{3}([^"]|\\"|""(?!")|"(?!"))*("{3}|' + _STRING_CB.format("STR_MT") + ")"
+)
+_STRING = r'"(\\\n|\\"|\\\\|[^"]|.\n])*("|' + _STRING_CB.format("STR") + ")"
 _REGEX_STRING = _STRING_MULTILINE + "|" + _STRING
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 
 # char regex
-CHAR = r"(?P<CHAR>'\w')"
+_CHAR_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_REGEX_CHAR = (
+    r"'(\\(\\|'|\"|\?|a|b|f|n|r|t|v|[0-9]{1,3}|x[a-fA-F0-9]+)|\s|\w){0,1}('|"
+    + _CHAR_CB.format("CHR")
+    + ")"
+)
+CHAR = r"(?P<CHAR>" + _REGEX_CHAR + ")"
 
-FULL_JAVAREGEX = "|".join([COMMENT, STRING, KEYWORD, NUMBER, OP, NAME])
+FULL_JAVAREGEX = "|".join([COMMENT, STRING, CHAR, KEYWORD, NUMBER, OP, NAME])
 
 
 class JavaRegex:
     def __init__(self):
 
-        self.regex_groups = [COMMENT, STRING, KEYWORD, NUMBER, OP, NAME]
+        self.regex_groups = [COMMENT, STRING, CHAR, KEYWORD, NUMBER, OP, NAME]
 
     def get_full_regex(self):
         return FULL_JAVAREGEX

@@ -93,16 +93,30 @@ NUMBER = r"(?P<NUMBER>" + _REGEX_NUMBER + ")"
 
 # comments regex
 _COMMENT = r"//[^\n]*"
-_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?\*/"
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_COMMENT_MULTILINE = r"/\*(.|[\r\n])*?(\*/|" + _STRING_CB.format("COMM_M") + ")"
 _REGEX_COMMENT = _COMMENT + "|" + _COMMENT_MULTILINE
 COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
-_REGEX_STRING = r'"(\\\n|\\"|\\\\|[^"]|.\n])*"'
+_STRING_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_STR_HEADERS = ["L", "u8", "u", "U"]
+_STRING_PREFIX = r"(" + "|".join(_STR_HEADERS) + ")?"
+_REGEX_STRING = (
+    _STRING_PREFIX + r'"(\\\n|\\"|\\\\|[^"]|.\n])*("|' + _STRING_CB.format("STR") + ")"
+)
 STRING = r"(?P<STRING>" + _REGEX_STRING + ")"
 
 # char regex
-_REGEX_CHAR = r"'(\\(\\|'|\"|\?|a|b|f|n|r|t|v|[0-9]{1,3}|x[a-fA-F0-9]+)|\w)'"
+_CHAR_CB = r"(?P<ERROR_{}>\Z)"  # catastrofic backtracking if a string is not closed
+_CHAR_HEADERS = []
+_CHAR_PREFIX = ""  # no char literals for C
+_REGEX_CHAR = (
+    _CHAR_PREFIX
+    + r"'(\\(\\|'|\"|\?|a|b|f|n|r|t|v|[0-9]{1,3}|x[a-fA-F0-9]+)|\s|\w){0,1}('|"
+    + _CHAR_CB.format("CHR")
+    + ")"
+)
 CHAR = r"(?P<CHAR>" + _REGEX_CHAR + ")"
 
 FULL_CREGEX = "|".join([COMMENT, STRING, CHAR, KEYWORD, NUMBER, OP, NAME])
@@ -121,3 +135,9 @@ class CRegex:
 
     def get_remove_doublespaces_regex(self):
         return RM_MULTIPLE_SPACES
+
+    def get_str_headers(self):
+        return _STR_HEADERS
+
+    def get_chr_headers(self):
+        return _CHAR_HEADERS
