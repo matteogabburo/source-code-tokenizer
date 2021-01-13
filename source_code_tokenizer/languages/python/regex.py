@@ -72,7 +72,8 @@ COMMENT = r"(?P<COMMENT>" + _REGEX_COMMENT + ")"
 
 # string regex
 _STRING_CB = r"(?P<ERROR_{}>\Z)" # catastrofic backtracking if a string is not closed
-_STRING_PREFIX = r"(b|r|u|f|br|fr)?"
+_STR_HEADERS = ["b","r","u","f","br","fr"]
+_STRING_PREFIX = r"("+ "|".join(_STR_HEADERS) +")?"
 _STRING_MULTILINE_T1 = _STRING_PREFIX + r'"{3}([^"]|\\"|""(?!")|"(?!"))*("{3}|'+ _STRING_CB.format("MT1") +')'
 _STRING_MULTILINE_T2 = _STRING_PREFIX + r"'{3}([^']|\\'|''(?!')|'(?!'))*('{3}|"+ _STRING_CB.format("MT2") +")"
 _REGEX_STRING_MULTILINE = _STRING_MULTILINE_T1 + "|" + _STRING_MULTILINE_T2
@@ -105,3 +106,6 @@ class PyRegex:
 
     def get_full_regex(self):
         return FULL_PYREGEX
+
+    def get_str_headers(self):
+        return _STR_HEADERS

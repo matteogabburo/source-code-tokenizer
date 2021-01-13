@@ -13,6 +13,7 @@ class CodeTokenizer:
     def __init__(self):
         self.TOKENIZED_STR = None
         self.TOKENIZED = None
+        self.str_headers = None
         self.setup_regex()
 
     def get_groups(self):
@@ -41,11 +42,13 @@ class CodeTokenizer:
 
 
 class PythonTokenizer(CodeTokenizer):
+    
     def setup_regex(self):
 
         # each regex should be a group
         self.TOKENIZED_STR = PyRegex().get_full_regex()
         self.TOKENIZED = re.compile(self.TOKENIZED_STR, re.MULTILINE)
+        self.str_headers = PyRegex().get_str_headers()
 
     def tokenize(self, text):
 
@@ -110,19 +113,25 @@ class PythonTokenizer(CodeTokenizer):
                 v = "\n"
 
             # check strings errors
-            if k == "STRING":
-                # string must be longher than 1 and bos and eos must be in [",'] and equal
-                if not(len(v) > 1 and v[0] == v[-1] and v[0] in ['"', "'"]):
-                    error = True
+            def check_strings(s):
 
-            if k == "STRING_M":
-                # string must be longher than 5 and bos and eos must be in [""",'''] and equal
-                if not (len(v) > 5 and v[:3] == v[-3] and v[:3] in ['"""', "'''"]):
-                    error = True
+                to_remove = max([len(h) if s.startswith(h) else 0 for h in self.str_headers])
+                v = s[to_remove:]
 
-            if error:
-                raise Exception("Error on string delimiters occurred while tokenizing")
+                if k == "STRING":
+                    # string must be longher than 1 and bos and eos must be in [",'] and equal
+                    # WARNING: a string can also start with (b|r|u|f|br|fr)
+                    if not(len(v) > 1 and v[0] == v[-1] and v[0] in ['"', "'"]):
+                        raise Exception("Error on string delimiters occurred while tokenizing STRING")
 
+                if k == "STRING_M":
+                    # string must be longher than 5 and bos and eos must be in [""",'''] and equal
+                    # WARNING: a string can also start with (b|r|u|f|br|fr)
+                    if not (len(v) > 5 and v[:3] == v[-3:] and v[:3] in ['"""', "'''"]):
+                        raise Exception("Error on string delimiters occurred while tokenizing STRING_M")                    
+
+            check_strings(v)
+            
             tokenized.append((v, k))
 
         return tokenized
